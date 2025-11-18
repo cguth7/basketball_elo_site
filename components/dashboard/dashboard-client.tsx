@@ -39,6 +39,18 @@ export function DashboardClient({
     const supabase = createClient()
     const team = teamNumber === 1 ? 'team_a' : 'team_b'
 
+    // Get user's current ELO
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('current_elo')
+      .eq('id', currentUserId)
+      .single()
+
+    if (!profile) {
+      console.error('Profile not found')
+      return
+    }
+
     // First, check if user is already in any team
     const { data: existingParticipant } = await supabase
       .from("game_participants")
@@ -54,11 +66,12 @@ export function DashboardClient({
         .update({ team: team })
         .eq("id", existingParticipant.id)
     } else {
-      // Insert new participant
+      // Insert new participant with elo_before
       await supabase.from("game_participants").insert({
         game_id: gameId,
         player_id: currentUserId,
         team: team,
+        elo_before: profile.current_elo,
       })
     }
 
