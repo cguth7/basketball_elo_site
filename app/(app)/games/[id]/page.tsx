@@ -49,7 +49,7 @@ export default async function GamePage({ params }: GamePageProps) {
         elo_before,
         elo_after,
         elo_change,
-        player:profiles(id, display_name, current_elo, avatar_url)
+        player:profiles!game_participants_player_id_fkey(id, display_name, current_elo, avatar_url)
       )
     `)
     .eq('id', id)
