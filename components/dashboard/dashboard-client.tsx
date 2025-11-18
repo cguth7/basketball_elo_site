@@ -37,6 +37,7 @@ export function DashboardClient({
 
   const handleJoinTeam = async (gameId: string, teamNumber: number) => {
     const supabase = createClient()
+    const team = teamNumber === 1 ? 'team_a' : 'team_b'
 
     // First, check if user is already in any team
     const { data: existingParticipant } = await supabase
@@ -50,14 +51,14 @@ export function DashboardClient({
       // Update team if already in game
       await supabase
         .from("game_participants")
-        .update({ team_number: teamNumber })
+        .update({ team: team })
         .eq("id", existingParticipant.id)
     } else {
       // Insert new participant
       await supabase.from("game_participants").insert({
         game_id: gameId,
         player_id: currentUserId,
-        team_number: teamNumber,
+        team: team,
       })
     }
 

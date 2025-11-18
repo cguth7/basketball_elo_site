@@ -14,7 +14,7 @@ interface Player {
 
 interface GameParticipant {
   id: string
-  team_number: number
+  team: 'team_a' | 'team_b'
   player: Player
 }
 
@@ -50,13 +50,13 @@ export function GameLobby({
   const participants = game.participants || []
 
   const teamAPlayers = participants
-    .filter((p) => p.team_number === 1)
+    .filter((p) => p.team === 'team_a')
     .map((p) => p.player)
   const teamBPlayers = participants
-    .filter((p) => p.team_number === 2)
+    .filter((p) => p.team === 'team_b')
     .map((p) => p.player)
 
-  const userTeam = participants.find((p) => p.player.id === currentUserId)?.team_number
+  const userTeam = participants.find((p) => p.player.id === currentUserId)?.team
 
   const teamAElo = teamAPlayers.length > 0
     ? Math.round(teamAPlayers.reduce((sum, p) => sum + p.current_elo, 0) / teamAPlayers.length)
@@ -136,7 +136,7 @@ export function GameLobby({
             )}
           </div>
 
-          {userTeam === 1 ? (
+          {userTeam === 'team_a' ? (
             <Button
               onClick={() => onLeaveGame(game.id)}
               variant="outline"
@@ -188,7 +188,7 @@ export function GameLobby({
             )}
           </div>
 
-          {userTeam === 2 ? (
+          {userTeam === 'team_b' ? (
             <Button
               onClick={() => onLeaveGame(game.id)}
               variant="outline"

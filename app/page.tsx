@@ -26,8 +26,8 @@ export default async function Home() {
       host:profiles!games_host_id_fkey(id, display_name, current_elo),
       participants:game_participants(
         id,
-        team_number,
-        player:profiles(id, display_name, current_elo, avatar_url)
+        team,
+        player:profiles!game_participants_player_id_fkey(id, display_name, current_elo, avatar_url)
       )
     `)
     .in('status', ['pending', 'in_progress'])
@@ -41,9 +41,9 @@ export default async function Home() {
       host:profiles!games_host_id_fkey(id, display_name, current_elo),
       participants:game_participants(
         id,
-        team_number,
+        team,
         elo_change,
-        player:profiles(id, display_name, current_elo, avatar_url)
+        player:profiles!game_participants_player_id_fkey(id, display_name, current_elo, avatar_url)
       )
     `)
     .eq('status', 'completed')

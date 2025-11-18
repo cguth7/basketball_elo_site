@@ -45,7 +45,7 @@ export default async function GamePage({ params }: GamePageProps) {
       host:profiles!games_host_id_fkey(id, display_name, current_elo),
       participants:game_participants(
         id,
-        team_number,
+        team,
         elo_before,
         elo_after,
         elo_change,
@@ -60,8 +60,8 @@ export default async function GamePage({ params }: GamePageProps) {
   }
 
   const isHost = game.host_id === user.id
-  const team1 = game.participants?.filter((p: any) => p.team_number === 1) || []
-  const team2 = game.participants?.filter((p: any) => p.team_number === 2) || []
+  const team1 = game.participants?.filter((p: any) => p.team === 'team_a') || []
+  const team2 = game.participants?.filter((p: any) => p.team === 'team_b') || []
   const currentUserParticipant = game.participants?.find((p: any) => p.player.id === user.id)
   const isCompleted = game.status === 'completed'
 

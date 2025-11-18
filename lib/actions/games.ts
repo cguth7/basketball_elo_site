@@ -52,7 +52,7 @@ export async function joinGame(gameId: string, team: 'team_a' | 'team_b') {
     .insert({
       game_id: gameId,
       player_id: user.id,
-      team_number: team === 'team_a' ? 1 : 2,
+      team: team,
       elo_before: profile.current_elo,
     })
 
