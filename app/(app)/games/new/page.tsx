@@ -103,14 +103,15 @@ export default async function NewGamePage() {
               </div>
 
               <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => (window.location.href = '/')}
-                >
-                  Cancel
-                </Button>
+                <Link href="/" className="flex-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                </Link>
                 <Button type="submit" className="flex-1 bg-[#990000] hover:bg-red-700">
                   Start Game
                 </Button>
