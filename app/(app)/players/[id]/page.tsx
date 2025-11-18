@@ -35,7 +35,7 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
           team,
           profiles (
             id,
-            full_name,
+            display_name,
             avatar_url,
             current_elo
           )
@@ -63,7 +63,7 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
                     <PlayerCard
                         player={{
                             id: player.id,
-                            full_name: player.full_name,
+                            full_name: player.display_name,
                             avatar_url: player.avatar_url,
                             elo_rating: player.current_elo,
                             games_played: player.games_played,
