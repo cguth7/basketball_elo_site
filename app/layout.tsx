@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Pottruck Basketball ELO | Penn Campus Rec",
-  description: "Track your basketball games and ELO ratings at Pottruck",
+  title: "PottruckKing | University of Pennsylvania",
+  description: "The official ELO tracker for Pottruck courts. Join lobbies, track stats, and find out who runs the gym.",
 };
 
 export default function RootLayout({
