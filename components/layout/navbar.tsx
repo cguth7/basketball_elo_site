@@ -53,6 +53,22 @@ export function Navbar({ user }: NavbarProps) {
             </span>
           </Link>
 
+          {/* Desktop Navigation - hidden on mobile */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link
+              href="/"
+              className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
+            >
+              Courts
+            </Link>
+            <Link
+              href="/leaderboard"
+              className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
+            >
+              Leaderboard
+            </Link>
+          </div>
+
           <div className="flex items-center gap-3">
             {user && (
               <>
