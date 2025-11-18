@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/layout/navbar'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
+import { DashboardRealtime } from '@/components/dashboard/dashboard-realtime'
 import { ensureUserProfile } from '@/lib/actions/ensure-profile'
 
 export default async function Home() {
@@ -52,6 +53,7 @@ export default async function Home() {
 
   return (
     <>
+      <DashboardRealtime />
       <Navbar user={profile} />
       <div className="min-h-screen bg-slate-50 pb-24">
         <main className="max-w-5xl mx-auto px-4 py-6">

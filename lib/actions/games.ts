@@ -34,19 +34,24 @@ export async function createGame(teamSize: number = 5) {
 }
 
 export async function joinGame(gameId: string, team: 'team_a' | 'team_b') {
+  console.log('Attempting to join game:', { gameId, team })
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
+    console.error('Join game failed: Not authenticated')
     throw new Error('Not authenticated')
   }
 
   // Ensure user has a profile
+  console.log('Ensuring profile for user:', user.id)
   const profile = await ensureUserProfile()
   if (!profile) {
+    console.error('Join game failed: Could not create/fetch profile')
     throw new Error('Failed to create profile')
   }
 
+  console.log('Inserting participant record...')
   const { error } = await supabase
     .from('game_participants')
     .insert({
@@ -56,8 +61,12 @@ export async function joinGame(gameId: string, team: 'team_a' | 'team_b') {
       elo_before: profile.current_elo,
     })
 
-  if (error) throw error
+  if (error) {
+    console.error('Join game failed: Database error', error)
+    throw error
+  }
 
+  console.log('Successfully joined game')
   revalidatePath(`/games/${gameId}`)
   revalidatePath('/')
 }
@@ -128,10 +137,12 @@ export async function submitGameResult(gameId: string, winningTeam: 'team_a' | '
 }
 
 export async function deleteGame(gameId: string) {
+  console.log('Attempting to delete game:', gameId)
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
+    console.error('Delete game failed: Not authenticated')
     throw new Error('Not authenticated')
   }
 
@@ -143,6 +154,7 @@ export async function deleteGame(gameId: string) {
     .single()
 
   if (!game || game.host_id !== user.id) {
+    console.error('Delete game failed: User is not host', { userId: user.id, hostId: game?.host_id })
     throw new Error('Only the host can delete the game')
   }
 
@@ -151,8 +163,12 @@ export async function deleteGame(gameId: string) {
     .delete()
     .eq('id', gameId)
 
-  if (error) throw error
+  if (error) {
+    console.error('Delete game failed: Database error', error)
+    throw error
+  }
 
+  console.log('Successfully deleted game')
   revalidatePath('/')
   redirect('/')
 }

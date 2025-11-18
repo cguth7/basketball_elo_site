@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Users, Trophy, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { CancelGameButton, JoinTeamButton, LeaveGameButton } from '@/components/games/game-actions'
+import { GameRealtime } from '@/components/games/game-realtime'
 
 interface GamePageProps {
   params: Promise<{
@@ -68,6 +69,7 @@ export default async function GamePage({ params }: GamePageProps) {
 
   return (
     <>
+      <GameRealtime gameId={game.id} />
       <Navbar user={profile} />
       <div className="min-h-screen bg-slate-50 pb-24">
         <main className="max-w-5xl mx-auto px-4 py-8">
