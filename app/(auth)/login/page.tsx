@@ -6,10 +6,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 px-4">
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            Basketball ELO Tracker
+            Pottruck Basketball ELO
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            Track your games, improve your rating
+            Penn Campus Rec - Track your games at Pottruck
           </p>
         </div>
 
@@ -20,7 +20,7 @@ export default function LoginPage() {
                 Welcome back
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                Sign in to continue to your dashboard
+                Sign in to view and join games at Pottruck
               </p>
             </div>
 

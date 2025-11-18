@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Basketball ELO Tracker",
-  description: "Track your basketball games and ELO ratings",
+  title: "Pottruck Basketball ELO | Penn Campus Rec",
+  description: "Track your basketball games and ELO ratings at Pottruck",
 };
 
 export default function RootLayout({
