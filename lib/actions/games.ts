@@ -5,15 +5,13 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { updateTeamRatings } from '@/lib/elo'
 
-export async function createGame(formData: FormData) {
+export async function createGame(teamSize: number = 5) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('Not authenticated')
   }
-
-  const teamSize = formData.get('team_size') as string
 
   const { data: game, error } = await supabase
     .from('games')
@@ -28,7 +26,7 @@ export async function createGame(formData: FormData) {
   if (error) throw error
 
   revalidatePath('/')
-  redirect(`/games/${game.id}`)
+  return game.id
 }
 
 export async function joinGame(gameId: string, team: 'team_a' | 'team_b') {
