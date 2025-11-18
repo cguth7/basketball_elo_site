@@ -4,10 +4,16 @@ import { PlayerCard } from '@/components/players/player-card'
 import { PlayerStatsGrid } from '@/components/players/stats-grid'
 import { GameCard } from '@/components/games/game-card'
 import { EloChart } from '@/components/players/elo-chart'
+import { Navbar } from '@/components/layout/navbar'
+import { MobileNav } from '@/components/layout/mobile-nav'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+import { getUser } from '@/lib/auth/helpers'
 
 export default async function PlayerProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     const supabase = await createClient()
+    const user = await getUser()
 
     // Fetch player profile
     const { data: player, error: playerError } = await supabase
@@ -19,6 +25,13 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
     if (playerError || !player) {
         notFound()
     }
+
+    // Fetch current user's profile for navbar
+    const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id || '')
+        .single()
 
     // Fetch ELO history
     const { data: eloHistory } = await supabase
@@ -64,8 +77,15 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
     })) || []
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <>
+            <Navbar user={currentUserProfile} />
+            <div className="min-h-screen bg-slate-50 pb-24">
+                <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+                    <Link href="/" className="inline-flex items-center text-slate-600 hover:text-slate-900 mb-6">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to courts
+                    </Link>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Left Column: Player Card */}
                 <div className="md:col-span-1">
                     <PlayerCard
@@ -115,6 +135,9 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
                     </section>
                 </div>
             </div>
-        </div>
+                </div>
+            </div>
+            <MobileNav />
+        </>
     )
 }
