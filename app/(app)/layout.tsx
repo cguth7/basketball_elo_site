@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { getUser } from '@/lib/auth/helpers'
 import { signOut } from '@/lib/auth/actions'
 
@@ -51,24 +52,24 @@ export default async function AppLayout({
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
               <div>
-                <a href="/" className="text-xl font-bold text-orange-600">
+                <Link href="/" className="text-xl font-bold text-orange-600">
                   Pottruck Basketball ELO
-                </a>
+                </Link>
                 <p className="text-xs text-gray-500 hidden sm:block">Penn Campus Rec</p>
               </div>
               <div className="hidden md:flex gap-1">
-                <a
+                <Link
                   href="/"
                   className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 >
                   Games
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/leaderboard"
                   className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 >
                   Leaderboard
-                </a>
+                </Link>
               </div>
             </div>
             <UserNav user={user} />

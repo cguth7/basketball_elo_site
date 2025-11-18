@@ -76,7 +76,7 @@ export default function NewGamePage() {
                 </h3>
                 <div className="mt-2 text-sm text-blue-700">
                   <ul className="list-disc pl-5 space-y-1">
-                    <li>You'll be the game host</li>
+                    <li>You&apos;ll be the game host</li>
                     <li>Share the game link with other players</li>
                     <li>Players can join up until you submit the result</li>
                     <li>After the game, submit the winning team</li>

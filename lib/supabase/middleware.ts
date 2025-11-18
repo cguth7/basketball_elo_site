@@ -11,13 +11,41 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
+        get(name: string) {
+          return request.cookies.get(name)?.value
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
-            supabaseResponse.cookies.set(name, value, options)
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          supabaseResponse = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          supabaseResponse.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          supabaseResponse = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          supabaseResponse.cookies.set({
+            name,
+            value: '',
+            ...options,
           })
         },
       },

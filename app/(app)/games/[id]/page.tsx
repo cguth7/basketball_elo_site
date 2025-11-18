@@ -8,12 +8,14 @@ import { Badge } from '@/components/ui/badge'
 import { Users, Trophy, X } from 'lucide-react'
 
 interface GamePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function GamePage({ params }: GamePageProps) {
+  const { id } = await params
+
   const user = await getUser()
   if (!user) {
     redirect('/login')
@@ -36,7 +38,7 @@ export default async function GamePage({ params }: GamePageProps) {
         player:profiles(id, display_name, current_elo, avatar_url)
       )
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !game) {
@@ -61,7 +63,10 @@ export default async function GamePage({ params }: GamePageProps) {
             </Badge>
           </div>
           {isHost && !isCompleted && (
-            <form action={deleteGame.bind(null, game.id)}>
+            <form action={async () => {
+              'use server'
+              await deleteGame(game.id)
+            }}>
               <Button variant="destructive" size="sm">
                 <X className="h-4 w-4 mr-2" />
                 Cancel Game
@@ -87,7 +92,10 @@ export default async function GamePage({ params }: GamePageProps) {
               )}
             </h2>
             {!isCompleted && !currentUserParticipant && (
-              <form action={joinGame.bind(null, game.id, 'team_a')}>
+              <form action={async () => {
+                'use server'
+                await joinGame(game.id, 'team_a')
+              }}>
                 <Button size="sm">Join</Button>
               </form>
             )}
@@ -148,7 +156,10 @@ export default async function GamePage({ params }: GamePageProps) {
               )}
             </h2>
             {!isCompleted && !currentUserParticipant && (
-              <form action={joinGame.bind(null, game.id, 'team_b')}>
+              <form action={async () => {
+                'use server'
+                await joinGame(game.id, 'team_b')
+              }}>
                 <Button size="sm" variant="secondary">Join</Button>
               </form>
             )}
@@ -204,12 +215,18 @@ export default async function GamePage({ params }: GamePageProps) {
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-4">Submit Game Result</h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <form action={submitGameResult.bind(null, game.id, 'team_a')}>
+            <form action={async () => {
+              'use server'
+              await submitGameResult(game.id, 'team_a')
+            }}>
               <Button className="w-full" size="lg">
                 Team 1 Won
               </Button>
             </form>
-            <form action={submitGameResult.bind(null, game.id, 'team_b')}>
+            <form action={async () => {
+              'use server'
+              await submitGameResult(game.id, 'team_b')
+            }}>
               <Button className="w-full" size="lg" variant="secondary">
                 Team 2 Won
               </Button>
