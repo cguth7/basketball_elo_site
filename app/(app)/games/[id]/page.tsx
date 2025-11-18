@@ -3,12 +3,13 @@ import { getUser } from '@/lib/auth/helpers'
 import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/layout/navbar'
 import { MobileNav } from '@/components/layout/mobile-nav'
-import { joinGame, leaveGame, submitGameResult, deleteGame } from '@/lib/actions/games'
+import { submitGameResult } from '@/lib/actions/games'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, Trophy, X, ArrowLeft } from 'lucide-react'
+import { Users, Trophy, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { CancelGameButton, JoinTeamButton, LeaveGameButton } from '@/components/games/game-actions'
 
 interface GamePageProps {
   params: Promise<{
@@ -83,17 +84,7 @@ export default async function GamePage({ params }: GamePageProps) {
               {isCompleted ? 'Completed' : game.status === 'in_progress' ? 'In Progress' : 'Open'}
             </Badge>
           </div>
-          {isHost && !isCompleted && (
-            <form action={async () => {
-              'use server'
-              await deleteGame(game.id)
-            }}>
-              <Button variant="destructive" size="sm">
-                <X className="h-4 w-4 mr-2" />
-                Cancel Game
-              </Button>
-            </form>
-          )}
+          <CancelGameButton gameId={game.id} isHost={isHost} isCompleted={isCompleted} />
         </div>
         <p className="text-gray-600">
           Hosted by {game.host.display_name} {isHost && '(You)'}
@@ -112,14 +103,12 @@ export default async function GamePage({ params }: GamePageProps) {
                 <Trophy className="h-5 w-5 text-yellow-600" />
               )}
             </h2>
-            {!isCompleted && !currentUserParticipant && (
-              <form action={async () => {
-                'use server'
-                await joinGame(game.id, 'team_a')
-              }}>
-                <Button size="sm">Join</Button>
-              </form>
-            )}
+            <JoinTeamButton
+              gameId={game.id}
+              team="team_a"
+              currentUserParticipant={currentUserParticipant}
+              isCompleted={isCompleted}
+            />
           </div>
           <div className="space-y-3">
             {team1.length > 0 ? (
@@ -152,11 +141,11 @@ export default async function GamePage({ params }: GamePageProps) {
                     </div>
                   </div>
                   {!isCompleted && participant.player.id === user.id && (
-                    <form action={leaveGame.bind(null, game.id)}>
-                      <Button variant="ghost" size="sm">
-                        Leave
-                      </Button>
-                    </form>
+                    <LeaveGameButton
+                      gameId={game.id}
+                      participantId={participant.id}
+                      currentUserId={user.id}
+                    />
                   )}
                 </div>
               ))
@@ -176,14 +165,12 @@ export default async function GamePage({ params }: GamePageProps) {
                 <Trophy className="h-5 w-5 text-yellow-600" />
               )}
             </h2>
-            {!isCompleted && !currentUserParticipant && (
-              <form action={async () => {
-                'use server'
-                await joinGame(game.id, 'team_b')
-              }}>
-                <Button size="sm" variant="secondary">Join</Button>
-              </form>
-            )}
+            <JoinTeamButton
+              gameId={game.id}
+              team="team_b"
+              currentUserParticipant={currentUserParticipant}
+              isCompleted={isCompleted}
+            />
           </div>
           <div className="space-y-3">
             {team2.length > 0 ? (
@@ -216,11 +203,11 @@ export default async function GamePage({ params }: GamePageProps) {
                     </div>
                   </div>
                   {!isCompleted && participant.player.id === user.id && (
-                    <form action={leaveGame.bind(null, game.id)}>
-                      <Button variant="ghost" size="sm">
-                        Leave
-                      </Button>
-                    </form>
+                    <LeaveGameButton
+                      gameId={game.id}
+                      participantId={participant.id}
+                      currentUserId={user.id}
+                    />
                   )}
                 </div>
               ))
