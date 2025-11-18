@@ -339,7 +339,7 @@ BEGIN
                 losses = CASE WHEN NOT v_is_winner AND NEW.winning_team != 'draw' THEN losses + 1 ELSE losses END,
                 updated_at = NOW()
             WHERE id = v_participant.player_id;
-        END FOR;
+        END LOOP;
     END IF;
 
     RETURN NEW;
