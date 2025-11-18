@@ -30,6 +30,11 @@ export async function ensureUserProfile() {
       id: user.id,
       display_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Player',
       avatar_url: user.user_metadata?.avatar_url,
+      current_elo: 1500,
+      peak_elo: 1500,
+      games_played: 0,
+      wins: 0,
+      losses: 0,
     })
     .select()
     .single()

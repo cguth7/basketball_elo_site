@@ -125,11 +125,16 @@ export async function submitGameResult(gameId: string, winningTeam: 'team_a' | '
   if (updateError) throw updateError
 
   // Call database function to update ELO ratings
-  const { error: eloError } = await supabase.rpc('update_elo_ratings', {
+  const { data: eloData, error: eloError } = await supabase.rpc('update_elo_ratings', {
     p_game_id: gameId
   })
 
-  if (eloError) throw eloError
+  if (eloError) {
+    console.error('ELO update error:', eloError)
+    throw new Error(`Failed to update ELO ratings: ${eloError.message}`)
+  }
+
+  console.log('ELO update successful:', eloData)
 
   revalidatePath(`/games/${gameId}`)
   revalidatePath('/')
