@@ -20,7 +20,7 @@ export default function LoginPage() {
                 Welcome back
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                Sign in to view and join games at Pottruck
+                Sign in to view and join games
               </p>
             </div>
 
