@@ -28,7 +28,8 @@ export function CancelGameButton({ gameId, isHost, isCompleted }: GameActionsPro
       router.refresh()
     } catch (error) {
       console.error('Error deleting game:', error)
-      alert('Failed to delete game. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert(`Failed to delete game: ${errorMessage}`)
       setIsLoading(false)
     }
   }
@@ -66,7 +67,8 @@ export function JoinTeamButton({ gameId, team, currentUserParticipant, isComplet
       router.refresh()
     } catch (error) {
       console.error('Error joining game:', error)
-      alert('Failed to join game. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert(`Failed to join game: ${errorMessage}`)
       setIsLoading(false)
     }
   }
@@ -100,7 +102,8 @@ export function LeaveGameButton({ gameId, participantId, currentUserId }: LeaveG
       router.refresh()
     } catch (error) {
       console.error('Error leaving game:', error)
-      alert('Failed to leave game. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert(`Failed to leave game: ${errorMessage}`)
       setIsLoading(false)
     }
   }
