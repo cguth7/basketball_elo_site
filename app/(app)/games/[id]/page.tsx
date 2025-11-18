@@ -1,0 +1,237 @@
+import { notFound, redirect } from 'next/navigation'
+import { getUser } from '@/lib/auth/helpers'
+import { createClient } from '@/lib/supabase/server'
+import { joinGame, leaveGame, submitGameResult, deleteGame } from '@/lib/actions/games'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Users, Trophy, X } from 'lucide-react'
+
+interface GamePageProps {
+  params: {
+    id: string
+  }
+}
+
+export default async function GamePage({ params }: GamePageProps) {
+  const user = await getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const supabase = await createClient()
+
+  // Fetch game details
+  const { data: game, error } = await supabase
+    .from('games')
+    .select(`
+      *,
+      host:profiles!games_host_id_fkey(id, display_name, current_elo),
+      participants:game_participants(
+        id,
+        team_number,
+        elo_before,
+        elo_after,
+        elo_change,
+        player:profiles(id, display_name, current_elo, avatar_url)
+      )
+    `)
+    .eq('id', params.id)
+    .single()
+
+  if (error || !game) {
+    notFound()
+  }
+
+  const isHost = game.host_id === user.id
+  const team1 = game.participants?.filter((p: any) => p.team_number === 1) || []
+  const team2 = game.participants?.filter((p: any) => p.team_number === 2) || []
+  const currentUserParticipant = game.participants?.find((p: any) => p.player.id === user.id)
+  const isCompleted = game.status === 'completed'
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold text-gray-900">{game.team_size} Game</h1>
+            <Badge variant={isCompleted ? 'secondary' : 'default'}>
+              {isCompleted ? 'Completed' : game.status === 'in_progress' ? 'In Progress' : 'Open'}
+            </Badge>
+          </div>
+          {isHost && !isCompleted && (
+            <form action={deleteGame.bind(null, game.id)}>
+              <Button variant="destructive" size="sm">
+                <X className="h-4 w-4 mr-2" />
+                Cancel Game
+              </Button>
+            </form>
+          )}
+        </div>
+        <p className="text-gray-600">
+          Hosted by {game.host.display_name} {isHost && '(You)'}
+        </p>
+      </div>
+
+      {/* Teams Grid */}
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
+        {/* Team 1 */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              Team 1
+              {isCompleted && game.winning_team === 1 && (
+                <Trophy className="h-5 w-5 text-yellow-600" />
+              )}
+            </h2>
+            {!isCompleted && !currentUserParticipant && (
+              <form action={joinGame.bind(null, game.id, 'team_a')}>
+                <Button size="sm">Join</Button>
+              </form>
+            )}
+          </div>
+          <div className="space-y-3">
+            {team1.length > 0 ? (
+              team1.map((participant: any) => (
+                <div
+                  key={participant.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    {participant.player.avatar_url && (
+                      <img
+                        src={participant.player.avatar_url}
+                        alt={participant.player.display_name}
+                        className="h-8 w-8 rounded-full"
+                      />
+                    )}
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {participant.player.display_name}
+                        {participant.player.id === user.id && ' (You)'}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        ELO: {isCompleted ? participant.elo_before : participant.player.current_elo}
+                        {isCompleted && participant.elo_change && (
+                          <span className={participant.elo_change > 0 ? 'text-green-600' : 'text-red-600'}>
+                            {' '}({participant.elo_change > 0 ? '+' : ''}{participant.elo_change})
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  {!isCompleted && participant.player.id === user.id && (
+                    <form action={leaveGame.bind(null, game.id)}>
+                      <Button variant="ghost" size="sm">
+                        Leave
+                      </Button>
+                    </form>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-8">No players yet</p>
+            )}
+          </div>
+        </Card>
+
+        {/* Team 2 */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Users className="h-5 w-5 text-orange-600" />
+              Team 2
+              {isCompleted && game.winning_team === 2 && (
+                <Trophy className="h-5 w-5 text-yellow-600" />
+              )}
+            </h2>
+            {!isCompleted && !currentUserParticipant && (
+              <form action={joinGame.bind(null, game.id, 'team_b')}>
+                <Button size="sm" variant="secondary">Join</Button>
+              </form>
+            )}
+          </div>
+          <div className="space-y-3">
+            {team2.length > 0 ? (
+              team2.map((participant: any) => (
+                <div
+                  key={participant.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    {participant.player.avatar_url && (
+                      <img
+                        src={participant.player.avatar_url}
+                        alt={participant.player.display_name}
+                        className="h-8 w-8 rounded-full"
+                      />
+                    )}
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {participant.player.display_name}
+                        {participant.player.id === user.id && ' (You)'}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        ELO: {isCompleted ? participant.elo_before : participant.player.current_elo}
+                        {isCompleted && participant.elo_change && (
+                          <span className={participant.elo_change > 0 ? 'text-green-600' : 'text-red-600'}>
+                            {' '}({participant.elo_change > 0 ? '+' : ''}{participant.elo_change})
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  {!isCompleted && participant.player.id === user.id && (
+                    <form action={leaveGame.bind(null, game.id)}>
+                      <Button variant="ghost" size="sm">
+                        Leave
+                      </Button>
+                    </form>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-8">No players yet</p>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      {/* Submit Result (Host Only) */}
+      {isHost && !isCompleted && team1.length > 0 && team2.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Submit Game Result</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <form action={submitGameResult.bind(null, game.id, 'team_a')}>
+              <Button className="w-full" size="lg">
+                Team 1 Won
+              </Button>
+            </form>
+            <form action={submitGameResult.bind(null, game.id, 'team_b')}>
+              <Button className="w-full" size="lg" variant="secondary">
+                Team 2 Won
+              </Button>
+            </form>
+          </div>
+          <p className="text-sm text-gray-500 mt-4 text-center">
+            ELO ratings will be updated automatically
+          </p>
+        </Card>
+      )}
+
+      {/* Game Info */}
+      {isCompleted && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Game Complete</h2>
+          <div className="text-sm text-gray-600 space-y-2">
+            <p>Completed at: {new Date(game.completed_at).toLocaleString()}</p>
+            <p>Winner: Team {game.winning_team}</p>
+            <p className="text-gray-500">ELO ratings have been updated for all participants</p>
+          </div>
+        </Card>
+      )}
+    </div>
+  )
+}

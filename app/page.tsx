@@ -1,79 +1,158 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/auth/helpers'
+import { createClient } from '@/lib/supabase/server'
+import { GameCard } from '@/components/games/game-card'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
 export default async function Home() {
   const user = await getUser()
 
+  if (!user) {
+    redirect('/login')
+  }
+
+  const supabase = await createClient()
+
+  // Fetch active games (pending or in_progress)
+  const { data: activeGames } = await supabase
+    .from('games')
+    .select(`
+      *,
+      host:profiles!games_host_id_fkey(id, display_name, current_elo),
+      participants:game_participants(
+        id,
+        team_number,
+        player:profiles(id, display_name, current_elo, avatar_url)
+      )
+    `)
+    .in('status', ['pending', 'in_progress'])
+    .order('created_at', { ascending: false })
+
+  // Fetch recent completed games
+  const { data: recentGames } = await supabase
+    .from('games')
+    .select(`
+      *,
+      host:profiles!games_host_id_fkey(id, display_name, current_elo),
+      participants:game_participants(
+        id,
+        team_number,
+        elo_change,
+        player:profiles(id, display_name, current_elo, avatar_url)
+      )
+    `)
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false })
+    .limit(5)
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-orange-50 to-amber-50">
-      <div className="text-center space-y-8">
-        <div>
-          <h1 className="text-6xl font-bold mb-4 text-gray-900">
-            Basketball ELO Tracker
-          </h1>
-          <p className="text-2xl text-gray-600">
-            Track your games, improve your rating
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Active Games</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Join a game or start a new one at Pottruck
+            </p>
+          </div>
+          <Link href="/games/new">
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Start Game
+            </Button>
+          </Link>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
-          {user ? (
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors shadow-lg"
-            >
-              Go to Dashboard
-            </Link>
+        {/* Active Games Section */}
+        <div className="mb-12">
+          {activeGames && activeGames.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {activeGames.map((game) => (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  currentUserId={user.id}
+                  onJoin={async () => {
+                    'use server'
+                    // Handled in game detail page
+                  }}
+                  onView={() => {}}
+                />
+              ))}
+            </div>
           ) : (
-            <>
-              <Link
-                href="/login"
-                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors shadow-lg"
-              >
-                Get Started
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors shadow"
-              >
-                Sign In
-              </Link>
-            </>
+            <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
+              <div className="flex flex-col items-center">
+                <svg
+                  className="h-12 w-12 text-gray-400 mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No active games
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  Be the first to start a game at Pottruck today!
+                </p>
+                <Link href="/games/new">
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Start First Game
+                  </Button>
+                </Link>
+              </div>
+            </div>
           )}
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3 max-w-4xl">
-          <div className="bg-white rounded-lg p-6 shadow-md">
-            <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+        {/* Recent Games Section */}
+        {recentGames && recentGames.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Recent Games
+            </h2>
+            <div className="space-y-4">
+              {recentGames.map((game) => (
+                <Link
+                  key={game.id}
+                  href={`/games/${game.id}`}
+                  className="block"
+                >
+                  <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm text-gray-500">
+                          {new Date(game.completed_at).toLocaleDateString()}
+                        </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {game.team_size}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {game.participants?.filter((p: any) => p.team_number === game.winning_team).length} players won
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        View Details →
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Track Stats</h3>
-            <p className="text-gray-600">Monitor your ELO rating and game performance over time</p>
           </div>
-
-          <div className="bg-white rounded-lg p-6 shadow-md">
-            <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Compete</h3>
-            <p className="text-gray-600">See how you rank against other players in the leaderboard</p>
-          </div>
-
-          <div className="bg-white rounded-lg p-6 shadow-md">
-            <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Improve</h3>
-            <p className="text-gray-600">Use insights from your games to level up your skills</p>
-          </div>
-        </div>
+        )}
       </div>
-    </main>
+    </div>
   )
 }

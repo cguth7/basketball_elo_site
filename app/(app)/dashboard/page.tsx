@@ -10,7 +10,7 @@ export default async function DashboardPage() {
           Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'Player'}!
         </h1>
         <p className="mt-2 text-gray-600">
-          Here's an overview of your basketball stats and recent activity.
+          Here&apos;s an overview of your basketball stats and recent activity.
         </p>
       </div>
 

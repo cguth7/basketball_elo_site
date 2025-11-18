@@ -50,18 +50,15 @@ export default async function AppLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
-              <h1 className="text-xl font-bold text-orange-600">
-                Basketball ELO
-              </h1>
+              <div>
+                <a href="/" className="text-xl font-bold text-orange-600">
+                  Pottruck Basketball ELO
+                </a>
+                <p className="text-xs text-gray-500 hidden sm:block">Penn Campus Rec</p>
+              </div>
               <div className="hidden md:flex gap-1">
                 <a
-                  href="/dashboard"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                >
-                  Dashboard
-                </a>
-                <a
-                  href="/games"
+                  href="/"
                   className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 >
                   Games
