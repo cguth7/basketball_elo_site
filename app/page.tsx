@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/layout/navbar'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
+import { ensureUserProfile } from '@/lib/actions/ensure-profile'
 
 export default async function Home() {
   const user = await getUser()
@@ -12,14 +13,10 @@ export default async function Home() {
     redirect('/login')
   }
 
-  const supabase = await createClient()
+  // Ensure user has a profile (create if doesn't exist)
+  const profile = await ensureUserProfile()
 
-  // Fetch user profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const supabase = await createClient()
 
   // Fetch active games (pending or in_progress)
   const { data: activeGames } = await supabase
