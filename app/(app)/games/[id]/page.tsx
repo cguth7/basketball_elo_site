@@ -16,6 +16,10 @@ interface GamePageProps {
   }>
 }
 
+// Enable dynamic params for runtime game IDs
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
+
 export default async function GamePage({ params }: GamePageProps) {
   const { id } = await params
 
