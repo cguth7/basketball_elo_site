@@ -72,10 +72,10 @@ export function DashboardClient({
     const supabase = createClient()
 
     // Determine winner
-    const winningTeam = teamAScore > teamBScore ? 1 : teamBScore > teamAScore ? 2 : null
+    const winningTeam = teamAScore > teamBScore ? 'team_a' : teamBScore > teamAScore ? 'team_b' : 'draw'
 
     // Update game status
-    await supabase
+    const { error: updateError } = await supabase
       .from("games")
       .update({
         status: "completed",
@@ -86,7 +86,19 @@ export function DashboardClient({
       })
       .eq("id", gameId)
 
-    // TODO: Calculate and update ELO changes for participants
+    if (updateError) {
+      console.error('Error updating game:', updateError)
+      return
+    }
+
+    // Call database function to update ELO ratings
+    const { error: eloError } = await supabase.rpc('update_elo_ratings', {
+      p_game_id: gameId
+    })
+
+    if (eloError) {
+      console.error('Error updating ELO:', eloError)
+    }
 
     router.refresh()
     setDashboardTab("history")

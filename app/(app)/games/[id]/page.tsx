@@ -1,11 +1,14 @@
 import { notFound, redirect } from 'next/navigation'
 import { getUser } from '@/lib/auth/helpers'
 import { createClient } from '@/lib/supabase/server'
+import { Navbar } from '@/components/layout/navbar'
+import { MobileNav } from '@/components/layout/mobile-nav'
 import { joinGame, leaveGame, submitGameResult, deleteGame } from '@/lib/actions/games'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, Trophy, X } from 'lucide-react'
+import { Users, Trophy, X, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 interface GamePageProps {
   params: Promise<{
@@ -22,6 +25,13 @@ export default async function GamePage({ params }: GamePageProps) {
   }
 
   const supabase = await createClient()
+
+  // Fetch user profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
 
   // Fetch game details
   const { data: game, error } = await supabase
@@ -52,7 +62,14 @@ export default async function GamePage({ params }: GamePageProps) {
   const isCompleted = game.status === 'completed'
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <Navbar user={profile} />
+      <div className="min-h-screen bg-slate-50 pb-24">
+        <main className="max-w-5xl mx-auto px-4 py-8">
+          <Link href="/" className="inline-flex items-center text-slate-600 hover:text-slate-900 mb-6">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to courts
+          </Link>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -86,8 +103,8 @@ export default async function GamePage({ params }: GamePageProps) {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Users className="h-5 w-5 text-blue-600" />
-              Team 1
-              {isCompleted && game.winning_team === 1 && (
+              Team A
+              {isCompleted && game.winning_team === 'team_a' && (
                 <Trophy className="h-5 w-5 text-yellow-600" />
               )}
             </h2>
@@ -150,8 +167,8 @@ export default async function GamePage({ params }: GamePageProps) {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Users className="h-5 w-5 text-orange-600" />
-              Team 2
-              {isCompleted && game.winning_team === 2 && (
+              Team B
+              {isCompleted && game.winning_team === 'team_b' && (
                 <Trophy className="h-5 w-5 text-yellow-600" />
               )}
             </h2>
@@ -219,8 +236,8 @@ export default async function GamePage({ params }: GamePageProps) {
               'use server'
               await submitGameResult(game.id, 'team_a')
             }}>
-              <Button className="w-full" size="lg">
-                Team 1 Won
+              <Button className="w-full bg-[#990000] hover:bg-red-700" size="lg">
+                Team A Won
               </Button>
             </form>
             <form action={async () => {
@@ -228,7 +245,7 @@ export default async function GamePage({ params }: GamePageProps) {
               await submitGameResult(game.id, 'team_b')
             }}>
               <Button className="w-full" size="lg" variant="secondary">
-                Team 2 Won
+                Team B Won
               </Button>
             </form>
           </div>
@@ -249,6 +266,9 @@ export default async function GamePage({ params }: GamePageProps) {
           </div>
         </Card>
       )}
-    </div>
+        </main>
+      </div>
+      <MobileNav />
+    </>
   )
 }

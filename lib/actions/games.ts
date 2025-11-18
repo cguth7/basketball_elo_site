@@ -85,7 +85,7 @@ export async function leaveGame(gameId: string) {
   revalidatePath('/')
 }
 
-export async function submitGameResult(gameId: string, winningTeam: 'team_a' | 'team_b', team1Score?: number, team2Score?: number) {
+export async function submitGameResult(gameId: string, winningTeam: 'team_a' | 'team_b', teamAScore?: number, teamBScore?: number) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -109,9 +109,9 @@ export async function submitGameResult(gameId: string, winningTeam: 'team_a' | '
     .from('games')
     .update({
       status: 'completed',
-      winning_team: winningTeam === 'team_a' ? 1 : 2,
-      team1_score: team1Score,
-      team2_score: team2Score,
+      winning_team: winningTeam,
+      team_a_score: teamAScore,
+      team_b_score: teamBScore,
       completed_at: new Date().toISOString(),
     })
     .eq('id', gameId)
