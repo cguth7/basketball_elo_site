@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { updateTeamRatings } from '@/lib/elo'
+import { ensureUserProfile } from './ensure-profile'
 
 export async function createGame(teamSize: number = 5) {
   const supabase = await createClient()
@@ -12,6 +13,9 @@ export async function createGame(teamSize: number = 5) {
   if (!user) {
     throw new Error('Not authenticated')
   }
+
+  // Ensure user has a profile before creating game
+  await ensureUserProfile()
 
   const { data: game, error } = await supabase
     .from('games')
@@ -37,15 +41,10 @@ export async function joinGame(gameId: string, team: 'team_a' | 'team_b') {
     throw new Error('Not authenticated')
   }
 
-  // Get user's current ELO
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('current_elo')
-    .eq('id', user.id)
-    .single()
-
+  // Ensure user has a profile
+  const profile = await ensureUserProfile()
   if (!profile) {
-    throw new Error('Profile not found')
+    throw new Error('Failed to create profile')
   }
 
   const { error } = await supabase
