@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { PlayerCard } from '@/components/players/player-card'
 import { PlayerStatsGrid } from '@/components/players/stats-grid'
 import { GameCard } from '@/components/games/game-card'
+import { EloChart } from '@/components/players/elo-chart'
 
 export default async function PlayerProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -18,6 +19,13 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
     if (playerError || !player) {
         notFound()
     }
+
+    // Fetch ELO history
+    const { data: eloHistory } = await supabase
+        .from('elo_history')
+        .select('recorded_at, elo_after')
+        .eq('player_id', id)
+        .order('recorded_at', { ascending: true })
 
     // Fetch recent games
     const { data: recentGames } = await supabase
@@ -83,6 +91,10 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
                             winRate={player.games_played ? Math.round((player.wins / player.games_played) * 100) : 0}
                             eloRating={player.current_elo}
                         />
+                    </section>
+
+                    <section>
+                        <EloChart data={eloHistory || []} />
                     </section>
 
                     <section>
